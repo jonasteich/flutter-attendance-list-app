@@ -1,21 +1,63 @@
-import 'package:app/home_page.dart';
+import 'package:app/auth/auth_page.dart';
+import 'package:app/auth/login.dart';
+import 'package:app/groups/create_group.dart';
+import 'package:app/groups/meetings/create_meeting.dart';
+import 'package:app/groups/meetings/index.dart';
+import 'package:app/groups/meetings/members/create_member.dart';
+import 'package:app/groups/meetings/members/index.dart';
+import 'package:app/groups/index.dart';
+import 'package:app/utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: messengerKey,
+      navigatorKey: navigatorKey,
+      routes: {
+        GroupPage.routeName: (context) => const GroupPage(),
+        MeetingPage.routeName: (context) => const MeetingPage(),
+        CreateMeeting.routeName: (context) => const CreateMeeting(),
+        CreateMember.routeName: (context) => const CreateMember(),
+        CreateGroup.routeName: (context) => const CreateGroup(),
+      },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const RootPage(),
+      home: FutureBuilder(
+        future: _initialization,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            debugPrint('Error: ${snapshot.error}');
+            return const Text('Something went wrong');
+          } else if (snapshot.hasData) {
+            return const RootPage();
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -33,28 +75,23 @@ class _RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Flutter Demo'),
-      ),
-      body: const HomePage(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          debugPrint('FloatingActionButton pressed');
+      body: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (snapshot.hasData) {
+            return const HomePage();
+          } else {
+            return const AuthPage();
+          }
         },
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: NavigationBar(
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPage = index;
-          });
-        },
-        selectedIndex: currentPage,
       ),
     );
   }

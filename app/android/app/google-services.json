@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "156929981126",
+    "firebase_url": "https://attendance-list-24027-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "attendance-list-24027",
+    "storage_bucket": "attendance-list-24027.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156929981126:android:7cacbb393e7da3ccca75c7",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "156929981126-jsjm2qvobgmugqs9d80dg48uev3eia80.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpQOOrqavSHY_beARAy1mVMeOtaIDW7hc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "156929981126-jsjm2qvobgmugqs9d80dg48uev3eia80.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
