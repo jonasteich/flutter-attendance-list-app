@@ -1,27 +1,29 @@
+import 'package:app/models/group_args.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class CreateGroup extends StatefulWidget {
-  const CreateGroup({Key? key}) : super(key: key);
+class EditMeeting extends StatefulWidget {
+  const EditMeeting({Key? key}) : super(key: key);
 
-  static String routeName = '/group/create';
+  static String routeName = '/group/edit';
 
   @override
-  State<CreateGroup> createState() => _CreateGroupState();
+  State<EditMeeting> createState() => _EditMeetingState();
 }
 
-class _CreateGroupState extends State<CreateGroup> {
+class _EditMeetingState extends State<EditMeeting> {
   final _database = FirebaseDatabase.instance.ref();
   final user = FirebaseAuth.instance.currentUser;
 
-  final nameController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)!.settings.arguments as GroupArgs;
+    final nameController = TextEditingController(text: args.meetingName);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Group'),
+        title: const Text('Edit Meeting'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -44,11 +46,13 @@ class _CreateGroupState extends State<CreateGroup> {
             _database
                 .child('groups')
                 .child(user!.uid)
-                .push()
-                .set({'name': nameController.text});
+                .child(args.groupKey)
+                .child('meetings')
+                .child(args.meetingKey!)
+                .update({'name': nameController.text});
             Navigator.pop(context);
           },
-          child: const Text('Create'),
+          child: const Text('Save'),
         ),
       ),
     );

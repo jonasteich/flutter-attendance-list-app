@@ -37,6 +37,7 @@ class _CreateMemberState extends State<CreateMember> {
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: TextField(
+          autofocus: true,
           controller: nameController,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

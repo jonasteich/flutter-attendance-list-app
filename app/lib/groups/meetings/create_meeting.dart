@@ -12,7 +12,7 @@ class CreateMeetingArgs {
 class CreateMeeting extends StatefulWidget {
   const CreateMeeting({Key? key}) : super(key: key);
 
-  static const routeName = '/group/create_meeting';
+  static const routeName = '/group/meeting/create';
 
   @override
   State<CreateMeeting> createState() => _CreateMeetingState();
@@ -76,6 +76,7 @@ class _CreateMeetingState extends State<CreateMeeting> {
                 ),
               ),
               TextField(
+                autofocus: true,
                 controller: nameController,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),

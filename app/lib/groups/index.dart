@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:app/groups/edit_group.dart';
 import 'package:app/groups/meetings/index.dart';
+import 'package:app/models/group_args.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:focused_menu/focused_menu.dart';
+import 'package:focused_menu/modals.dart';
 
 import 'create_group.dart';
 
@@ -64,13 +68,45 @@ class _HomePageState extends State<HomePage> {
           return ListTile(
             title: Text(groups[index]['name']!),
             leading: const Icon(Icons.group),
+            trailing: FocusedMenuHolder(
+              menuItems: [
+                FocusedMenuItem(
+                  title: const Text('Rename'),
+                  trailingIcon: const Icon(Icons.edit),
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      EditGroup.routeName,
+                      arguments: GroupArgs(
+                        groupKey: groups[index]['key']!,
+                        groupName: groups[index]['name']!,
+                      ),
+                    );
+                  },
+                ),
+                FocusedMenuItem(
+                  title: const Text('Delete'),
+                  trailingIcon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    _deleteGroup(groups[index]['key']!);
+                  },
+                )
+              ],
+              openWithTap: true,
+              onPressed: () {},
+              blurBackgroundColor: Colors.grey,
+              child: const Icon(Icons.more_vert),
+            ),
             onTap: () {
               Navigator.pushNamed(
                 context,
                 GroupPage.routeName,
-                arguments: GroupPageArgs(
-                  groups[index]['name']!,
-                  groups[index]['key']!,
+                arguments: GroupArgs(
+                  groupName: groups[index]['name']!,
+                  groupKey: groups[index]['key']!,
                 ),
               );
             },
@@ -87,6 +123,10 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  void _deleteGroup(String key) {
+    _database.child('/groups/${user!.uid}/$key').remove();
   }
 
   @override

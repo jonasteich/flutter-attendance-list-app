@@ -101,7 +101,7 @@ class _LoginWidgetState extends State<LoginWidget> {
     } on FirebaseAuthException catch (e) {
       print('Error: $e');
 
-      Utils.showSnackBar(e.message);
+      Utils.showErrorSnackBar(e.message);
     }
 
     navigatorKey.currentState!.popUntil((route) => route.isFirst);
