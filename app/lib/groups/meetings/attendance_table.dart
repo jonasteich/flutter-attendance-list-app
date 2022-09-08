@@ -1,7 +1,8 @@
+import 'package:app/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
 
 import '../../models/group_args.dart';
 
@@ -29,10 +30,13 @@ class AttendanceTable extends StatelessWidget {
   List<Widget> _buildAttendanceCells(
     List<String> attendance,
     List<String> members,
+    int guests,
   ) {
     List<Widget> cells = [];
+    int present = 0;
     for (String member in members) {
       bool isPresent = attendance.contains(member);
+      if (isPresent) present++;
       cells.add(
         Container(
           height: 30,
@@ -46,6 +50,24 @@ class AttendanceTable extends StatelessWidget {
         ),
       );
     }
+    cells.add(
+      Container(
+        height: 30,
+        padding: const EdgeInsets.all(2),
+        child: Center(
+          child: Text('$guests'),
+        ),
+      ),
+    );
+    cells.add(
+      Container(
+        height: 30,
+        padding: const EdgeInsets.all(2),
+        child: Center(
+          child: Text('${present + guests}'),
+        ),
+      ),
+    );
     return cells;
   }
 
@@ -53,6 +75,7 @@ class AttendanceTable extends StatelessWidget {
     List<List<String>> attendance,
     List<String> members,
     List<String> dates,
+    List<int> guests,
   ) {
     List<Widget> rows = [];
     for (int i = 0; i < attendance.length; i++) {
@@ -70,7 +93,7 @@ class AttendanceTable extends StatelessWidget {
                 ),
               ),
             ),
-            ..._buildAttendanceCells(attendance[i], members),
+            ..._buildAttendanceCells(attendance[i], members, guests[i]),
           ],
         ),
       );
@@ -107,6 +130,12 @@ class AttendanceTable extends StatelessWidget {
     }).toList();
   }
 
+  List<int> _getGuests(Iterable<DataSnapshot> meetings) {
+    return meetings.map((e) {
+      return e.child('guests').value as int;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as GroupArgs;
@@ -133,6 +162,7 @@ class AttendanceTable extends StatelessWidget {
             snapshot.data!.snapshot.children,
           );
           List<String> dates = _getDates(snapshot.data!.snapshot.children);
+          List<int> guests = _getGuests(snapshot.data!.snapshot.children);
 
           return SingleChildScrollView(
             child: Padding(
@@ -152,34 +182,62 @@ class AttendanceTable extends StatelessWidget {
                   List<String> members =
                       _getNames(snapshot.data!.snapshot.children);
 
-                  return SingleChildScrollView(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Column(
+                  return Column(
+                    children: [
+                      SingleChildScrollView(
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 80, child: Text('')),
-                            ..._buildNameCells(members),
-                          ],
-                        ),
-                        Flexible(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
+                          children: <Widget>[
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                ..._buildAttendanceColumns(
-                                  meetings,
-                                  members,
-                                  dates,
+                                const SizedBox(height: 80, child: Text('')),
+                                ..._buildNameCells(members),
+                                Container(
+                                  height: 30,
+                                  padding: const EdgeInsets.all(2),
+                                  child: const Center(
+                                    child: Text('Guests'),
+                                  ),
                                 ),
-                              ], // Attendance column
+                                Container(
+                                  height: 30,
+                                  padding: const EdgeInsets.all(2),
+                                  child: const Center(
+                                    child: Text('Total Visitors'),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            Flexible(
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ..._buildAttendanceColumns(
+                                      meetings,
+                                      members,
+                                      dates,
+                                      guests,
+                                    ),
+                                  ], // Attendance column
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Utils.createExcel(
+                          members: members,
+                          attendance: meetings,
+                          dates: dates,
+                          guests: guests,
+                        ),
+                        child: const Text('Export to Excel'),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -190,50 +248,3 @@ class AttendanceTable extends StatelessWidget {
     );
   }
 }
-
-
-// Table(
-//   defaultColumnWidth: const IntrinsicColumnWidth(),
-//   children: [
-//     TableRow(
-//       children: [
-//         const Text(''),
-//         for (final meeting in presentUserEachMeeting)
-//           Padding(
-//             padding: const EdgeInsets.all(4.0),
-//             child: RotatedBox(
-//               quarterTurns: 3,
-//               child: Center(
-//                 child: Text(meeting['name']),
-//               ),
-//             ),
-//           ),
-//       ],
-//     ),
-//     for (final member in members!)
-//       TableRow(
-//         children: [
-//           Padding(
-//             padding: const EdgeInsets.all(2.0),
-//             child: Text(member.split(' ')[0]),
-//           ),
-//           for (final meeting in presentUserEachMeeting)
-//             Padding(
-//               padding: const EdgeInsets.all(2.0),
-//               child: Center(
-//                 child:
-//                     meeting['presentUsers'].contains(member)
-//                         ? const Icon(
-//                             Icons.check,
-//                             color: Colors.green,
-//                           )
-//                         : const Icon(
-//                             Icons.close,
-//                             color: Colors.red,
-//                           ),
-//               ),
-//             ),
-//         ],
-//       ),
-//   ],
-//   );
